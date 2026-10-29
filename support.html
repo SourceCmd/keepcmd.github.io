@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support - Keep Cmd</title>
+<meta name="description" content="Help with Keep Cmd: common problems, where the log is, and how to reach us.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b2030" media="(prefers-color-scheme: dark)">
+<style>
+  :root { color-scheme: light dark; --bg: #ffffff; --fg: #1d1d1f; --muted: #6e6e73; --link: #0a6fa6; --surface: #f2f7fb; --border: #dce6ee; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b2030; --fg: #f2f5f7; --muted: #9fb2c1; --link: #86cdf2; --surface: #233847; --border: #2e4656; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 32px; }
+  nav { display: flex; gap: 20px; font-size: 15px; margin-bottom: 40px; }
+  h1 { font-size: 32px; margin: 0 0 8px; }
+  h2 { font-size: 22px; margin: 40px 0 8px; }
+  h3 { font-size: 17px; margin: 24px 0 4px; }
+  p, li { color: var(--muted); }
+  strong { color: var(--fg); }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--link); }
+  code { font: 0.86em "SF Mono", Menlo, Consolas, monospace; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 8px 0 16px; }
+  pre code { background: none; border: 0; padding: 0; font-size: 14px; overflow-wrap: normal; white-space: pre; }
+  footer { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; border-top: 1px solid var(--border); font-size: 14px; }
+  footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="./">Install</a><a href="support.html">Support</a><a href="https://loopcmd.com">Loop Cmd</a></nav>
+
+  <h1>Support</h1>
+  <p>Start here when your keep misbehaves. Setting up for the first time? See <a href="./">Install</a>.</p>
+
+  <h2>Look first</h2>
+  <pre><code>keepcmd service status
+keepcmd status</code></pre>
+  <p>The first says whether the service is running, whether it survives logging out, and where the log is. The second shows the keep's connection, its sandbox, the harnesses it found and its agents.</p>
+  <p><strong>The log</strong> is <code>~/.keepcmd/daemon.log</code> (also <code>journalctl --user -u keepcmd</code>). It's designed to hold ids, types, timings and error codes, not your messages or prompts.</p>
+
+  <h2>Common problems</h2>
+
+  <h3>The app says my keep is offline</h3>
+  <ul>
+    <li>Check it's running: <code>keepcmd service status</code>. If there's no service, install it: <code>keepcmd service install</code>.</li>
+    <li>Stops when you log out, or doesn't come back after a reboot? Turn on lingering, once: <code>sudo loginctl enable-linger $USER</code>.</li>
+    <li>Check the machine is online, then look at the end of the log.</li>
+    <li>To restart it: <code>systemctl --user restart keepcmd</code>. (Under the service, <code>keepcmd stop</code> alone gets it restarted.)</li>
+  </ul>
+
+  <h3>The app asks me to pair again</h3>
+  <ul>
+    <li>Run <code>keepcmd hub pair</code> and scan the new code from the <strong>Keep</strong> tab. Each code works once, for 10 minutes.</li>
+    <li>If it says this device was removed, check <code>keepcmd hub devices</code>.</li>
+  </ul>
+
+  <h3>"Update needed"</h3>
+  <ul>
+    <li>Your keep or the app is too old for the other. Update the keep with <code>keepcmd hub update --now</code>, and the app from its store.</li>
+  </ul>
+
+  <h3>The installer says there's no build for this machine</h3>
+  <ul>
+    <li>Keep Cmd is built for Linux on <code>x86_64</code> and <code>aarch64</code>. Other platforms aren't supported yet.</li>
+  </ul>
+
+  <h3>Setup says this machine can't run agents safely</h3>
+  <ul>
+    <li>Agents need a Landlock sandbox: Linux 6.12 or newer, with <code>landlock</code> in <code>cat /sys/kernel/security/lsm</code>. Upgrade the kernel, or enable Landlock in your boot settings, then run <code>keepcmd hub setup</code> again.</li>
+  </ul>
+
+  <h3>An agent's harness isn't found</h3>
+  <ul>
+    <li>Run <code>keepcmd hub harness</code> to see what the keep finds and where. Keep Cmd never installs a harness: install it yourself, as the same user that runs the keep.</li>
+    <li>The service sees a shorter <code>PATH</code> than your shell. It looks in <code>~/.local/bin</code>, npm's global folder and the system's. If yours is elsewhere, tell the keep: <code>keepcmd hub harness path claude /path/to/claude</code> (or <code>codex</code>, <code>gemini</code>, <code>copilot</code>, <code>pi</code>), then restart the keep.</li>
+    <li>pi needs Node 22.19 or newer. To choose which Node: <code>keepcmd hub harness node pi /path/to/node</code>.</li>
+  </ul>
+
+  <h3>Agents won't start</h3>
+  <ul>
+    <li>Run <code>keepcmd hub network status</code>. If network control is unavailable, agents won't start until it is. Run once: <code>sudo ~/.local/bin/keepcmd hub network install</code>.</li>
+  </ul>
+
+  <h3>The sandbox refuses something</h3>
+  <ul>
+    <li>Each agent works in its own folder, behind a sandbox, and reaches the network only through the keep's proxy. Websites are open by default; your local network, this machine's own services, and ports other than web ones aren't.</li>
+    <li>When an agent needs something outside that, it asks you in Loop Cmd. <strong>Allow</strong> answers once. A folder outside the agent's sandbox needs <strong>Always allow</strong>, which adds it and restarts the agent.</li>
+  </ul>
+
+  <h3>Phones on my Wi-Fi can't reach the keep (Hearth Cmd)</h3>
+  <ul>
+    <li>A firewall (ufw or firewalld) may be blocking the keep's port. <code>sudo ~/.local/bin/keepcmd hub network install</code> allows it from your local network only. Loop Cmd doesn't need this.</li>
+  </ul>
+
+  <h3>I lost my PIN, or all my devices</h3>
+  <ul>
+    <li>On the new device, tap <strong>Forgot your PIN?</strong> and <strong>Use the console</strong>. Then, at the keep's computer, run <code>keepcmd hub approve</code> and check the code matches the one on the device.</li>
+    <li>Too many wrong PINs lock sign-ins by PIN. To unlock them: <code>keepcmd hub custody unlock</code>.</li>
+  </ul>
+
+  <h2>Help us help you</h2>
+  <p>Optional, and off by default: <code>keepcmd hub health-reports on</code> sends the relay a daily report of the keep's version, uptime, sandbox and update health, and error counts by type. Nothing else. <code>keepcmd hub health-reports show</code> prints one.</p>
+
+  <h2>Contact</h2>
+  <p>Still stuck? Email <a href="mailto:support@vergelabs.org">support@vergelabs.org</a> with your <code>keepcmd version</code>, your Linux distribution, and what you saw. Please don't send keys, recovery words, messages or prompts: we don't need them to help.</p>
+</main>
+<footer>
+  <p>Keep Cmd is part of <a href="https://sourcecmd.com">Source Cmd</a>. Questions: <a href="mailto:support@vergelabs.org">support@vergelabs.org</a></p>
+  <p>&copy; 2026 Verge Labs LLC</p>
+</footer>
+</body>
+</html>

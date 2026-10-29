@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep Cmd</title>
+<meta name="description" content="Install Keep Cmd and turn a computer of yours into a keep: the home for your AI agents and your conversations.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b2030" media="(prefers-color-scheme: dark)">
+<style>
+  :root { color-scheme: light dark; --bg: #ffffff; --fg: #1d1d1f; --muted: #6e6e73; --link: #0a6fa6; --surface: #f2f7fb; --border: #dce6ee; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b2030; --fg: #f2f5f7; --muted: #9fb2c1; --link: #86cdf2; --surface: #233847; --border: #2e4656; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 16px 32px; }
+  nav { display: flex; gap: 20px; font-size: 15px; margin-bottom: 40px; }
+  h1 { font-size: 32px; margin: 0 0 8px; }
+  h2 { font-size: 22px; margin: 40px 0 8px; }
+  h3 { font-size: 17px; margin: 24px 0 4px; }
+  p, li { color: var(--muted); }
+  strong { color: var(--fg); }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--link); }
+  code { font: 0.86em "SF Mono", Menlo, Consolas, monospace; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--fg); overflow-wrap: anywhere; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 8px 0 16px; }
+  pre code { background: none; border: 0; padding: 0; font-size: 14px; overflow-wrap: normal; white-space: pre; }
+  footer { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; border-top: 1px solid var(--border); font-size: 14px; }
+  footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="./">Install</a><a href="support.html">Support</a><a href="https://loopcmd.com">Loop Cmd</a></nav>
+
+  <h1>Keep Cmd</h1>
+  <p>Turn a computer of yours into a keep: an always-on home for your AI agents and your conversations, for <a href="https://loopcmd.com">Loop Cmd</a> and <a href="https://hearthcmd.com">Hearth Cmd</a>. Your data lives on your machine. Every agent runs in a sandbox.</p>
+
+  <h2>What you need</h2>
+  <ul>
+    <li><strong>Linux</strong> on a 64-bit Intel/AMD (<code>x86_64</code>) or ARM (<code>aarch64</code>) machine. macOS comes later.</li>
+    <li><strong>Linux 6.12 or newer, with Landlock on.</strong> Agents run in a Landlock sandbox, and Keep Cmd won't set up without it. Check that <code>cat /sys/kernel/security/lsm</code> lists <code>landlock</code>.</li>
+    <li><strong>systemd</strong>, to run the keep as a service.</li>
+    <li><strong>An agent harness</strong> you install yourself, signed in with your own account: Claude Code, Codex, Gemini CLI, GitHub Copilot CLI or pi.</li>
+    <li><strong>Loop Cmd</strong> on your phone, to pair with the keep.</li>
+  </ul>
+
+  <h2>Install</h2>
+  <pre><code>curl -fsSL https://keepcmd.com/install.sh | sh</code></pre>
+  <p>It installs one file, <code>~/.local/bin/keepcmd</code>, and needs no root. Before installing, it checks the download against Keep Cmd's signed release. Want to read it first? <a href="install.sh">Here it is.</a> If <code>~/.local/bin</code> isn't on your <code>PATH</code>, the installer says how to add it.</p>
+
+  <h2>Set up your keep</h2>
+  <h3>1. Make this machine a keep</h3>
+  <pre><code>keepcmd hub setup</code></pre>
+  <p>This makes the keep's keys and shows your <strong>recovery key</strong>: 24 words, shown once. Write them down and keep them somewhere safe. They unlock your backups. For Hearth Cmd too, add <code>--household MyHouse</code>.</p>
+
+  <h3>2. Run it as a service</h3>
+  <pre><code>keepcmd service install
+sudo loginctl enable-linger $USER</code></pre>
+  <p>The first line starts the keep now and at every login. The second, run once, keeps it running after you log out and starts it at boot.</p>
+
+  <h3>3. Check network control</h3>
+  <pre><code>keepcmd hub network status</code></pre>
+  <p>Agents reach the network only through the keep's proxy, and won't start until that can be enforced. If the status says it can't be (common on Ubuntu), or that a firewall may keep Hearth Cmd or displays out, run the one root step:</p>
+  <pre><code>sudo ~/.local/bin/keepcmd hub network install</code></pre>
+
+  <h3>4. Pair Loop Cmd</h3>
+  <pre><code>keepcmd hub pair</code></pre>
+  <p>It shows a QR code. In Loop Cmd, open the <strong>Keep</strong> tab, tap <strong>Scan pairing code</strong> and scan it, or paste the link it prints. The code works once, for 10 minutes. Your phone can be anywhere: pairing goes through the relay, so this machine just needs to be online. For Hearth Cmd, on the same Wi-Fi: <code>keepcmd hub pair --app hearth</code>.</p>
+
+  <h3>5. Let your agents in</h3>
+  <p><code>keepcmd hub harness</code> lists the harnesses the keep found, and their versions. To sign Claude agents in with your Claude account: <code>keepcmd hub login-claude</code>. For pi agents, give the keep a model provider's API key with <code>keepcmd hub provider key anthropic</code> (or <code>openai</code>, <code>google</code>, <code>openrouter</code>); it asks for the key, and agents never see it. Then, in Loop Cmd, open <strong>Keep &rarr; New agent</strong>.</p>
+
+  <h2>Back up</h2>
+  <pre><code>keepcmd hub backup --to /path/to/a/folder</code></pre>
+  <p>Backs the keep up, encrypted to your recovery key. It remembers the folder and backs up nightly, keeping the last 14. To move to a new machine: <code>keepcmd hub restore &lt;backup file&gt;</code>, with your recovery key. Your phones reconnect on their own.</p>
+
+  <h2>Updates</h2>
+  <p>A keep running as a service updates itself overnight from the signed release feed, and checks each release's signature first. To check or update now:</p>
+  <pre><code>keepcmd hub update --check
+keepcmd hub update --now</code></pre>
+
+  <h2 id="uninstall">Uninstall</h2>
+  <ol>
+    <li>Stop the service and remove it: <code>keepcmd service uninstall</code></li>
+    <li>If you ran the root step, remove its firewall rules: <code>sudo ~/.local/bin/keepcmd hub network uninstall</code></li>
+    <li>Remove the program: <code>rm ~/.local/bin/keepcmd</code></li>
+    <li>To erase the keep itself, remove <code>~/.keepcmd</code> (its keys, its database and your conversations' copy) and <code>~/keepcmd_agents</code> (your agents' folders). This can't be undone: without a backup and your recovery key, that keep is gone.</li>
+  </ol>
+  <p>To delete your Loop Cmd account too, see <a href="https://loopcmd.com/delete-account.html">loopcmd.com</a>.</p>
+
+  <p>Something not working? See <a href="support.html">Support</a>.</p>
+</main>
+<footer>
+  <p>Keep Cmd is part of <a href="https://sourcecmd.com">Source Cmd</a>. Questions: <a href="mailto:support@vergelabs.org">support@vergelabs.org</a></p>
+  <p>&copy; 2026 Verge Labs LLC</p>
+</footer>
+</body>
+</html>
