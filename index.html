@@ -82,12 +82,12 @@ keepcmd hub update --now</code></pre>
 
   <h2 id="uninstall">Uninstall</h2>
   <ol>
-    <li>Stop the service and remove it: <code>keepcmd service uninstall</code></li>
-    <li>If you ran the root step, remove its firewall rules: <code>sudo ~/.local/bin/keepcmd hub network uninstall</code></li>
-    <li>Remove the program: <code>rm ~/.local/bin/keepcmd</code></li>
-    <li>To erase the keep itself, remove <code>~/.keepcmd</code> (its keys, its database and your conversations' copy) and <code>~/keepcmd_agents</code> (your agents' folders). This can't be undone: without a backup and your recovery key, that keep is gone.</li>
+    <li>If you ran the root step (<code>hub network install</code>), first remove its firewall rules and AppArmor profile: <code>sudo ~/.local/bin/keepcmd uninstall</code></li>
+    <li>Then, as yourself: <code>keepcmd uninstall</code>. It stops and removes the service and the program. Your keep's data stays, and it tells you where.</li>
+    <li>To erase the keep itself as well: <code>keepcmd uninstall --delete-data</code>. It removes <code>~/.keepcmd</code> (its keys, its database and your conversations' copy) and <code>~/keepcmd_agents</code> (your agents' folders), after you confirm. This can't be undone: without a backup and your recovery key, that keep is gone.</li>
   </ol>
-  <p>To delete your Loop Cmd account too, see <a href="https://loopcmd.com/delete-account.html">loopcmd.com</a>.</p>
+  <p><code>keepcmd uninstall</code> needs Keep Cmd 0.1.14 or later. A keep updates itself overnight, or run <code>keepcmd hub update --now</code>.</p>
+  <p>To delete your Loop Cmd account too, see <a href="https://loopcmd.com/delete-account">loopcmd.com</a>.</p>
 
   <p>Something not working? See <a href="support.html">Support</a>.</p>
 </main>
